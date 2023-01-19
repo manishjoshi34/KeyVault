@@ -9,6 +9,7 @@ import java.util.Random;
 public class KeyGenerator {
 
     public static StringBuilder charList = new StringBuilder();
+    public static StringBuilder upperCharList = new StringBuilder();
     public static StringBuilder numberList = new StringBuilder();
     public static StringBuilder specials = new StringBuilder();
 
@@ -24,7 +25,7 @@ public class KeyGenerator {
             charList.append(c);
         }
         for (char c = 'A'; c <= 'Z'; c++) {
-            charList.append(c);
+            upperCharList.append(c);
         }
         for (char c = '0'; c <= '9'; c++) {
             numberList.append(c);
@@ -39,44 +40,41 @@ public class KeyGenerator {
         Random rand = new Random();
         return rand.nextInt((max - min) + 1) + min;
     }
-
+    public static String generateKeyWithAllowedChar(int size, String allowedChars) {
+        StringBuilder result = new StringBuilder();
+        Random rand = new Random();
+        for (int i = 0; i < size; i++) {
+            result.append(allowedChars.charAt(rand.nextInt(allowedChars.length())));
+        }
+        return result.toString();
+    }
     public static String generateRandomNumber(int size,String excludedSpecial) {
-        Random rand = new Random();
-        StringBuilder result = new StringBuilder();
-        StringBuilder specialChars = numberList;
-        for (char c : excludedSpecial.toCharArray()) {
-            specialChars.deleteCharAt(specialChars.indexOf(String.valueOf(c)));
+        StringBuilder allowedChars = numberList;
+        for(char c : excludedSpecial.toCharArray()){
+            allowedChars.deleteCharAt(allowedChars.indexOf(String.valueOf(c)));
         }
-        for (int i = 0; i < size; i++) {
-            result.append(specialChars.charAt(rand.nextInt(specialChars.length())));
-        }
-        return result.toString();
+        return generateKeyWithAllowedChar(size,allowedChars.toString());
     }
-
-    public static String generateRandomChars(int size,String excludedSpecial) {
-        Random rand = new Random();
-        StringBuilder result = new StringBuilder();
-        StringBuilder specialChars = charList;
-        for (char c : excludedSpecial.toCharArray()) {
-            specialChars.deleteCharAt(specialChars.indexOf(String.valueOf(c)));
+    public static String generateRandomLowerChars(int size,String excludedSpecial) {
+        StringBuilder allowedChars = charList;
+        for(char c : excludedSpecial.toCharArray()){
+            allowedChars.deleteCharAt(allowedChars.indexOf(String.valueOf(c)));
         }
-        for (int i = 0; i < size; i++) {
-            result.append(specialChars.charAt(rand.nextInt(specialChars.length())));
-        }
-        return result.toString();
+        return generateKeyWithAllowedChar(size,allowedChars.toString());
     }
-
+    public static String generateRandomUpperChars(int size,String excludedSpecial) {
+        StringBuilder allowedchars = upperCharList;
+        for(char c : excludedSpecial.toCharArray()){
+            allowedchars.deleteCharAt(allowedchars.indexOf(String.valueOf(c)));
+        }
+        return generateKeyWithAllowedChar(size,allowedchars.toString());
+    }
     public static String generateRandomSpecial(int size, String excludedSpecial){
-        Random rand = new Random();
-        StringBuilder result = new StringBuilder();
-        StringBuilder specialChars = specials;
-        for (char c : excludedSpecial.toCharArray()) {
-            specialChars.deleteCharAt(specialChars.indexOf(String.valueOf(c)));
+        StringBuilder allowedchars = specials;
+        for(char c : excludedSpecial.toCharArray()){
+            allowedchars.deleteCharAt(allowedchars.indexOf(String.valueOf(c)));
         }
-        for (int i = 0; i < size; i++) {
-            result.append(specialChars.charAt(rand.nextInt(specialChars.length())));
-        }
-        return result.toString();
+        return generateKeyWithAllowedChar(size,allowedchars.toString());
     }
     public static String shuffle(String input) {
         List<Character> characters = new ArrayList<>();
@@ -91,11 +89,12 @@ public class KeyGenerator {
         return result.toString();
     }
 
-    //generate 8 char long password including specials
+
+
     public static String generate() {
         return generate(DefaultSize);
     }
-    public static  String generate(int size) {
+    public static String generate(int size) {
         return generate(true,true, true,size,-1,-1,-1,"");
     }
 
@@ -106,32 +105,42 @@ public class KeyGenerator {
         return generate(true,true,false, size, -1,-1,-1,"");
     }
     public static String generate(boolean includeChars, boolean includeNums, boolean includeSpecials,
-                                  int size, int charSize, int numSize, int specialSize, String excludeChars) {
+                                  int size, int upperCharSize, int numSize, int specialSize, String excludeChars) {
+
+        if(size==0) throw  new RuntimeException("Size can not be zero");
+
+        StringBuilder lowerChars = charList;
+        StringBuilder upperChars = upperCharList;
+        StringBuilder specialChars = specials;
+        StringBuilder numberChars = numberList;
 
         if (size == -1) size = DefaultSize;
+        int lowerSize = 1;
+
+        int bufferSize = size - lowerSize;
+        bufferSize -= (includeChars? (upperCharSize == -1 ? 1 : upperCharSize) : 0);
+        bufferSize -= (includeNums? (numSize==-1? 1: numSize) : 0);
+        bufferSize -= (includeSpecials? (specialSize==-1?1:specialSize) : 0 );
+
+        if(bufferSize< 0 ) throw new RuntimeException("All required size are not correct");
+
+
         // Sample random characters
         StringBuilder result = new StringBuilder();
         Random rand = new Random();
 
-        int bufferSize = size;
-        if(charSize!=-1) bufferSize -=charSize;
-        if(numSize!=-1)  bufferSize -=numSize;
-        if(specialSize!=-1) bufferSize -= specialSize;
-
-        if(bufferSize< 0) throw new RuntimeException("Invalid specified size");
-
         // Add characters to the list
         if (includeChars) {
-            if (charSize != -1) {
-                int newcharSize = generateNumberInRange(charSize,charSize+bufferSize);
-                bufferSize -= (newcharSize - charSize);
-                charSize = newcharSize;
+            if (upperCharSize != -1) {
+                int newcharSize = generateNumberInRange(upperCharSize,upperCharSize+bufferSize);
+                bufferSize -= (newcharSize - upperCharSize);
+                upperCharSize = newcharSize;
             } else {
-                charSize = generateNumberInRange(0,bufferSize);
-                bufferSize -= charSize;
+                upperCharSize = generateNumberInRange(1,bufferSize+1);
+                bufferSize -= (upperCharSize-1);
             }
         } else {
-            charSize = 0;
+            upperCharSize = 0;
         }
         // Add numbers to the list
         if (includeNums) {
@@ -140,8 +149,8 @@ public class KeyGenerator {
                 bufferSize -= (newnumSize - numSize);
                 numSize = newnumSize;
             } else {
-                numSize = generateNumberInRange(numSize,bufferSize);
-                bufferSize -= numSize;
+                numSize = generateNumberInRange(1,bufferSize+1);
+                bufferSize -= (numSize-1);
             }
         } else {
             numSize = 0;
@@ -153,18 +162,33 @@ public class KeyGenerator {
                 bufferSize -= (newspecialSize - specialSize);
                 specialSize = newspecialSize;
             } else {
-                specialSize = generateNumberInRange(specialSize,bufferSize);
-                bufferSize -= specialSize;
+                specialSize = generateNumberInRange(1,bufferSize+1);
+                bufferSize -= (specialSize-1);
             }
         } else {
             specialSize = 0;
         }
 
-        if(bufferSize!= 0) throw new RuntimeException("Something went wrong");
+        if(bufferSize < 0) throw new RuntimeException("Something went wrong");
 
-        result.append(generateRandomChars(charSize,excludeChars));
-        result.append(generateRandomNumber(numSize,excludeChars));
-        result.append(generateRandomSpecial(specialSize,excludeChars));
+        lowerSize += bufferSize;
+
+        for(char c : excludeChars.toCharArray()) {
+            if (c >= 'a' && c <'z') {
+                lowerChars.deleteCharAt(lowerChars.indexOf(String.valueOf(c)));
+            } else if (c >= 'A' && c <='Z') {
+                upperChars.deleteCharAt(upperChars.indexOf(String.valueOf(c)));
+            } else if (c >='0' && c<='9'){
+                numberChars.deleteCharAt(numberChars.indexOf(String.valueOf(c)));
+            } else {
+                specialChars.deleteCharAt(specialChars.indexOf(String.valueOf(c)));
+            }
+        }
+
+        result.append(generateKeyWithAllowedChar(lowerSize,lowerChars.toString()));
+        result.append(generateKeyWithAllowedChar(upperCharSize,upperChars.toString()));
+        result.append(generateKeyWithAllowedChar(numSize,numberChars.toString()));
+        result.append(generateKeyWithAllowedChar(specialSize,specialChars.toString()));
 
         return shuffle(result.toString());
     }

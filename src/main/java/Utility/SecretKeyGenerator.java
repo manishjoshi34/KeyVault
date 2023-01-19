@@ -14,13 +14,16 @@ public class SecretKeyGenerator {
 
     SecretKeyGenerator(String algo, Integer size) {
         _algorithm = algo;
-        if(size == 256) _sizeOfKey = size;
+        _sizeOfKey = size;
     }
 
     public String getSecretKey() throws NoSuchAlgorithmException {
-            KeyGenerator keyGenerator = KeyGenerator.getInstance(_algorithm);
-            keyGenerator.init(_sizeOfKey); // specify key size
-            SecretKey key = keyGenerator.generateKey();
-            return Base64.getEncoder().encodeToString(key.getEncoded());
+        if (_sizeOfKey != 128 && _sizeOfKey != 256){
+            return Utility.KeyGenerator.generate(_sizeOfKey);
+        }
+        KeyGenerator keyGenerator = KeyGenerator.getInstance(_algorithm);
+        keyGenerator.init(_sizeOfKey); // specify key size
+        SecretKey key = keyGenerator.generateKey();
+        return Base64.getEncoder().encodeToString(key.getEncoded());
     }
 }

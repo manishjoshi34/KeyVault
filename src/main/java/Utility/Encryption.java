@@ -66,8 +66,7 @@ public class Encryption {
                                 }
 
                         } catch (NoSuchAlgorithmException e) {
-                                secretKey = "p8H+JLxO5aCg7VQvX8Wl0M5Q5D5G7I5R";
-                                logger.info("Secret key generation fail");
+                                secretKey = KeyGenerator.generate(keySize);
                         }
                         logger.info("Encryption key initialized");
                         initialized = true;

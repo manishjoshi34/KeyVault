@@ -46,11 +46,11 @@ class KeyGeneratorTest {
 
     @Test
     void generateRandomChars() {
-        String chars = KeyGenerator.generateRandomChars(8,"io");
+        String chars = KeyGenerator.generateRandomLowerChars(8,"io");
         boolean result = true;
 
         if(chars.length() != 8 ||
-           chars.contains("i") || chars.contains("io")) {
+           chars.contains("i") || chars.contains("o")) {
             result = false;
         }
 
@@ -61,14 +61,37 @@ class KeyGeneratorTest {
 
     @Test
     void generateRandomSpecial() {
+        String chars = KeyGenerator.generateRandomSpecial(8,"#$");
+        boolean result = true;
+
+        if(chars.length() != 8 ||
+                chars.contains("$") || chars.contains("#")) {
+            result = false;
+        }
+
+        result = isCharInSequence(chars,KeyGenerator.specials.toString());
+
+        assertEquals(true,result);
     }
 
     @Test
     void shuffle() {
+        boolean result = true;
+        String name = "abcdefg";
+        String sName = KeyGenerator.shuffle(name);
+        if (name.compareTo(sName)==0) result = false;
+        if (name.length() != sName.length()) result = false;
+        assertEquals(true,result);
     }
 
     @Test
     void generate() {
+        String key = KeyGenerator.generate();
+        boolean result = true;
+        if(key.length() != 8) result = false;
+        key = KeyGenerator.generate(10);
+        if(key.length() != 10) result = false;
+        assertEquals(true,result);
     }
 
     @Test
